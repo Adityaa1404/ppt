@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DBA Initial Assessment: Fajar Cell - Presentasi Mahasiswa</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #0a0f1d;
+            --bg-card: rgba(18, 26, 47, 0.85);
+            --bg-card-hover: rgba(28, 40, 70, 0.95);
+            --border-glow: rgba(56, 189, 248, 0.25);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            
+            --primary: #38bdf8;       /* Sky Cyan */
+            --primary-glow: #0284c7;
+            --secondary: #818cf8;     /* Indigo */
+            --accent-danger: #f87171;  /* Rose Red */
+            --accent-warning: #fbbf24; /* Amber */
+            --accent-success: #34d399; /* Emerald */
+            
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            
+            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-code: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            user-select: none;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(129, 140, 248, 0.08) 0%, transparent 40%);
+        }
+
+        /* Top Progress Bar */
+        .progress-bar-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            z-index: 1000;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.7);
+            transition: width 0.3s ease;
+        }
+
+        /* Header Bar */
+        .deck-header {
+            position: fixed;
+            top: 12px;
+            left: 24px;
+            right: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 999;
+            pointer-events: none;
+        }
+        .brand-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--border-subtle);
+            padding: 6px 14px;
+            border-radius: 20px;
+            backdrop-filter: blur(8px);
+            pointer-events: auto;
+        }
+        .brand-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            box-shadow: 0 0 8px var(--primary);
+        }
+        .brand-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+            letter-spacing: 0.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            pointer-events: auto;
+        }
+        .icon-btn {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .icon-btn:hover {
+            color: var(--text-main);
+            border-color: var(--primary);
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        /* Slide Container */
+        .slide-deck {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            max-width: 1340px;
+            height: 86vh;
+            padding: 36px 44px;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: scale(0.97) translateY(12px);
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) transparent;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: scale(1) translateY(0);
+        }
+
+        /* Slide Titles & Subtitles */
+        .slide-tag {
+            display: inline-block;
+            align-self: flex-start;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--primary);
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 4px 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        .slide-title {
+            font-size: clamp(26px, 3vw, 38px);
+            font-weight: 800;
+            line-height: 1.18;
+            background: linear-gradient(135deg, #ffffff 40%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+        .slide-subtitle {
+            font-size: 14.5px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            max-width: 960px;
+            line-height: 1.5;
+        }
+
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            flex: 1;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            flex: 1;
+        }
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 18px 20px;
+            backdrop-filter: blur(12px);
+            transition: all 0.22s ease;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .card:hover {
+            border-color: var(--border-glow);
+            background: var(--bg-card-hover);
+            transform: translateY(-2px);
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-body {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            flex: 1;
+        }
+
+        /* Table of Contents Item */
+        .toc-card {
+            background: rgba(18, 26, 47, 0.7);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            padding: 22px;
+            cursor: pointer;
+            transition: all 0.25s;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        .toc-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 4px; height: 100%;
+            background: var(--border-subtle);
+            transition: all 0.25s;
+        }
+        .toc-card:hover {
+            background: rgba(28, 40, 70, 0.9);
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+        .toc-card:hover::before {
+            background: var(--primary);
+            box-shadow: 0 0 12px var(--primary);
+        }
+        .toc-num {
+            font-family: var(--font-code);
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+        }
+        .toc-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .toc-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Interactive Tables Explorer */
+        .table-nav {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 14px;
+            scrollbar-width: thin;
+        }
+        .table-tab-btn {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 600;
+            font-family: var(--font-code);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .table-tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--primary);
+            background: rgba(56, 189, 248, 0.08);
+        }
+        .table-tab-btn.active {
+            background: rgba(56, 189, 248, 0.15);
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.2);
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-critical {
+            background: rgba(248, 113, 113, 0.15);
+            color: var(--accent-danger);
+            border: 1px solid rgba(248, 113, 113, 0.4);
+        }
+        .badge-warning {
+            background: rgba(251, 191, 36, 0.15);
+            color: var(--accent-warning);
+            border: 1px solid rgba(251, 191, 36, 0.4);
+        }
+        .badge-success {
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--accent-success);
+            border: 1px solid rgba(52, 211, 153, 0.4);
+        }
+        .badge-info {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--primary);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+        }
+
+        /* Metric Box */
+        .metric-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 30px;
+            font-weight: 800;
+            font-family: var(--font-code);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+        .metric-label {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Tables & Code */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+            text-align: left;
+        }
+        th {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-main);
+            font-weight: 700;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border-subtle);
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+        td {
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: var(--text-muted);
+            vertical-align: top;
+        }
+        tr:hover td {
+            background: rgba(56, 189, 248, 0.03);
+            color: var(--text-main);
+        }
+
+        .code-container {
+            background: #060913;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-family: var(--font-code);
+            font-size: 12px;
+            color: #e2e8f0;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+        .code-keyword { color: #f472b6; font-weight: 600; }
+        .code-func { color: #60a5fa; }
+        .code-string { color: #a7f3d0; }
+        .code-comment { color: #64748b; font-style: italic; }
+
+        /* Speaker Notes Panel */
+        .speaker-notes-drawer {
+            position: fixed;
+            bottom: 75px;
+            right: 24px;
+            width: 420px;
+            max-height: 380px;
+            background: #0f172a;
+            border: 1px solid var(--border-glow);
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            z-index: 1001;
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+            backdrop-filter: blur(16px);
+        }
+        .speaker-notes-drawer.open {
+            display: flex;
+        }
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .notes-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--accent-warning);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .notes-content {
+            font-size: 13px;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        /* Floating Nav */
+        .nav-bar {
+            position: fixed;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid var(--border-subtle);
+            border-radius: 30px;
+            padding: 8px 18px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+        }
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: var(--text-main);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover {
+            background: var(--primary);
+            color: #040813;
+            transform: scale(1.08);
+        }
+        .slide-counter {
+            font-size: 13px;
+            font-family: var(--font-code);
+            font-weight: 600;
+            color: var(--text-muted);
+            min-width: 60px;
+            text-align: center;
+        }
+        .slide-counter span { color: var(--primary); }
+
+        .text-cyan { color: var(--primary); }
+        .text-rose { color: var(--accent-danger); }
+        .text-amber { color: var(--accent-warning); }
+        .text-emerald { color: var(--accent-success); }
+        .font-mono { font-family: var(--font-code); }
+
+        /* ERD SVG styling */
+        .erd-container {
+            width: 100%;
+            height: 100%;
+            background: #060914;
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            overflow: auto;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @media (max-width: 992px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            .grid-4 { grid-template-columns: repeat(2, 1fr); }
+            .slide { padding: 26px 20px; height: 90vh; }
+            .speaker-notes-drawer { width: calc(100vw - 40px); right: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Progress Bar -->
+    <div class="progress-bar-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- Header Bar -->
+    <header class="deck-header">
+        <div class="brand-badge">
+            <div class="brand-dot"></div>
+            <div class="brand-title">DBA INITIAL ASSESSMENT &bull; FAJAR CELL</div>
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" onclick="toggleNotes()">
+                <span>🎙️</span> Notes (<kbd>S</kbd>)
+            </button>
+            <button class="icon-btn" onclick="toggleFullScreen()">
+                <span>⛶</span> Fullscreen (<kbd>F</kbd>)
+            </button>
+        </div>
+    </header>
+
+    <!-- Slide Deck -->
+    <main class="slide-deck">
+
+        <!-- ==================== SLIDE 1: TITLE HERO ==================== -->
+        <section class="slide active" id="slide-1">
+            <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; max-width: 960px; margin: 0 auto;">
+                <div class="slide-tag">Mini Challenge &bull; DBA Initial Assessment</div>
+                <h1 style="font-size: clamp(34px, 4.4vw, 54px); font-weight: 800; line-height: 1.15; margin-bottom: 16px; background: linear-gradient(135deg, #ffffff 30%, var(--primary) 70%, var(--secondary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    Penilaian Arsitektur &amp; Integritas Data Sistem POS "Fajar Cell"
+                </h1>
+                <p style="font-size: 17px; color: var(--text-muted); max-width: 760px; margin-bottom: 34px; line-height: 1.6;">
+                    Audit Skema Relasional, Investigasi Anomali Nilai Negatif &amp; Orphan Record, Serta Strategi Mitigasi Integritas Basis Data
+                </p>
+
+                <div style="display: flex; gap: 18px; flex-wrap: wrap; justify-content: center;">
+                    <div class="metric-box" style="min-width: 160px;">
+                        <div class="metric-value text-cyan">13</div>
+                        <div class="metric-label">Total Tabel</div>
+                    </div>
+                    <div class="metric-box" style="min-width: 160px;">
+                        <div class="metric-value text-rose">10</div>
+                        <div class="metric-label">Orphan Details</div>
+                    </div>
+                    <div class="metric-box" style="min-width: 160px;">
+                        <div class="metric-value text-amber">11</div>
+                        <div class="metric-label">Harga Negatif</div>
+                    </div>
+                    <div class="metric-box" style="min-width: 160px;">
+                        <div class="metric-value text-emerald">4 Kritis</div>
+                        <div class="metric-label">Selisih Transaksi</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 34px; font-size: 13px; color: var(--text-dim);">
+                    Peran: <strong style="color: var(--text-main);">Database Administrator (DBA)</strong> &bull; Lingkungan: <strong style="color: var(--text-main);">MySQL 8.x (localhost)</strong> &bull; Kasus: <strong style="color: var(--text-main);">Fajar Cell Tuban</strong>
+                </div>
+            </div>
+            <!-- Notes -->
+            <div class="notes-data" style="display:none;">
+                <strong>Presenter Script (Slide 1):</strong><br>
+                "Selamat pagi/siang rekan-rekan dan dosen pengampu. Hari ini kelompok kami bertindak sebagai Database Administrator (DBA) untuk mempresentasikan Initial Assessment pada sistem database 'fajar_cell'. Kami melakukan investigasi langsung ke database di localhost dan siap membedah arsitektur, relasi, serta risiko integritasnya."
+            </div>
+        </section>
+
+
+        <!-- ==================== SLIDE 2: TABLE OF CONTENTS ==================== -->
+        <section class="slide" id="slide-2">
+            <div class="slide-tag">Agenda Presentasi</div>
+            <h2 class="slide-title">Table of Contents</h2>
+            <p class="slide-subtitle">Struktur pembahasan presentasi Initial Assessment Database Administrator.</p>
+
+            <div class="grid-2" style="gap: 20px; align-items: stretch;">
+                <div class="toc-card" onclick="showSlide(3)">
+                    <div class="toc-num">01</div>
+                    <div class="toc-title">Penjelasan Singkat Konteks Database</div>
+                    <div class="toc-desc">
+                        Profil studi kasus Toko Smartphone Fajar Cell Tuban, alur proses bisnis POS, serial item IMEI, kredit piutang, dan metrik sistem localhost.
+                    </div>
+                </div>
+
+                <div class="toc-card" onclick="showSlide(4)">
+                    <div class="toc-num">02</div>
+                    <div class="toc-title">Penjelasan Seluruh Tabel &amp; Field</div>
+                    <div class="toc-desc">
+                        Inspeksi detail ke-13 tabel basis data: spesifikasi nama kolom/field, tipe data, primary key, nullability, dan peran operasionalnya.
+                    </div>
+                </div>
+
+                <div class="toc-card" onclick="showSlide(6)">
+                    <div class="toc-num">03</div>
+                    <div class="toc-title">Relasi Antar Tabel &amp; Visual ERD</div>
+                    <div class="toc-desc">
+                        Visualisasi Entity Relationship Diagram (ERD) lengkap, kardinalitas 1-to-N, Foreign Key paths, dan evaluasi aturan aksi referensial (Delete/Update Rules).
+                    </div>
+                </div>
+
+                <div class="toc-card" onclick="showSlide(8)">
+                    <div class="toc-num">04</div>
+                    <div class="toc-title">Risiko Data, Kebutuhan &amp; Prioritas Perlindungan</div>
+                    <div class="toc-desc">
+                        Temuan audit riil anomali data, perumusan entitas baru (kebutuhan data), matriks risiko P1/P2, aturan integritas DDL, dan proteksi disaster recovery.
+                    </div>
+                </div>
+            </div>
+            <!-- Notes -->
+            <div class="notes-data" style="display:none;">
+                <strong>Presenter Script (Slide 2):</strong><br>
+                "Sesuai dengan arahan tugas kelompok, agenda presentasi kami terbagi menjadi 4 bagian terstruktur: Pertama, penjelasan konteks bisnis toko Fajar Cell. Kedua, penjelasan lengkap 13 tabel dan field-fieldnya. Ketiga, pemetaan relasi dan visual ERD. Keempat, identifikasi risiko data aktual beserta rekomendasi prioritas mitigasi DBA."
+            </div>
+        </section>
+
+
+        <!-- ==================== SLIDE 3: AGENDA 1 - KONTEKS DATABASE ==================== -->
+        <section class="slide" id="slide-3">
+            <div class="slide-tag">Agenda 01 &bull; Konteks Sistem</div>
+            <h2 class="slide-title">1. Profil &amp; Konteks Bisnis Database Fajar Cell</h2>
+            <p class="slide-subtitle">Memahami karakteristik operasional toko retail ponsel dan implikasinya terhadap arsitektur basis data.</p>
+
+            <div class="grid-3" style="margin-bottom: 20px;">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">📱 Serial Item Tracking (IMEI)</span>
+                        <span class="badge badge-info">Unik per Unit</span>
+                    </div>
+                    <div class="card-body">
+                        Berbeda dengan retail biasa, produk smartphone adalah <strong>barang serial bernilai tinggi</strong>. Setiap unit memiliki Nomor IMEI unik, kondisi fisik (Baru/Second), Battery Health, harga modal kulakan yang fluktuatif, serta garansi resmi/toko.
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">🔄 Transaksi Tukar Tambah (Trade-In)</span>
+                        <span class="badge badge-warning">Dual Alur</span>
+                    </div>
+                    <div class="card-body">
+                        Alur bisnis di mana pembeli menukarkan HP lama miliknya untuk memotong harga HP baru. Transaksi ini secara simultan bertindak sebagai <strong>Penjualan Unit Baru</strong> sekaligus <strong>Pembelian Unit Bekas</strong> dalam 1 nomor nota transaksi.
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">💳 Penjualan Kredit &amp; Komisi Sales</span>
+                        <span class="badge badge-critical">Finansial</span>
+                    </div>
+                    <div class="card-body">
+                        Mendukung skema termin bayar (Cash, Transfer, DP, cicilan bertempo dengan bunga) yang melahirkan <strong>Piutang Pelanggan</strong>, serta pembagian insentif komisi sales per unit transaksi yang harus diaudit ketat.
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="background: rgba(15, 23, 42, 0.5);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                        <strong style="color: var(--primary);">Spesifikasi Lingkungan Teknis:</strong>
+                        <span style="font-size: 13px; color: var(--text-muted); margin-left: 8px;">
+                            Database: <code class="font-mono text-cyan">fajar_cell</code> | Engine: <code class="font-mono">InnoDB</code> | Lokasi: <strong style="color:#fff;">Fajar Cell Tuban (Jl. Pemuda No. 75)</strong> | Volume: <strong style="color:#fff;">135 Nota &bull; 71 Unit HP</strong>
+                        </span>
+                    </div>
+                    <span class="badge badge-success">Sistem Berjalan Aktif</span>
+                </div>
+            </div>
+            <!-- Notes -->
+            <div class="notes-data" style="display:none;">
+                <strong>Presenter Script (Slide 3):</strong><br>
+                "Bagian pertama: Konteks database Fajar Cell. Fajar Cell adalah toko retail smartphone dan aksesoris di Tuban. Karakteristik bisnisnya unik: barang dagangan dilacak per nomor IMEI, ada transaksi tukar-tambah yang menggabungkan jual-beli sekaligus, dan ada sistem cicilan piutang. Jika database tidak dirancang untuk menangani variasi ini, maka kasir atau developer akan membuat jalan pintas berbahaya yang merusak pembukuan."
+            </div>
+        </section>
+
+
+        <!-- ==================== SLIDE 4: AGENDA 2 - SELURUH TABEL & FIELD (BAGIAN 1) ==================== -->
+        <section class="slide" id="slide-4">
+            <div class="slide-tag">Agenda 02 &bull; Kamus Data (Bagian 1)</div>
+            <h2 class="slide-title">2. Penjelasan Seluruh Tabel &amp; Field (Modul 1 &amp; 2)</h2>
+            <p class="slide-subtitle">Rincian struktur kolom, tipe data, dan konstrain pada Modul Inventaris Produk dan Master Kontak.</p>
+
+            <div class="grid-2">
+                <!-- Modul Inventaris -->
+                <div class="card" style="border-left: 4px solid var(--primary);">
+                    <div class="card-header">
+                        <span class="card-title text-cyan">📦 Modul Inventaris (katalog, unit, stok)</span>
+                        <span class="badge badge-info">3 Tabel</span>
+                    </div>
+                    <div class="card-body" style="font-size: 12px;">
+                        <div style="margin-bottom: 10px;">
+                            <strong>1. <code>katalog_produk</code> (Master Model Produk)</strong>
+                            <div class="code-container" style="padding: 6px 10px; margin-top: 4px; font-size: 11px;">
+• id [INT, PK, AI] : ID unik katalog<br>
+• kategori [ENUM: 'HP','AKSESORIS'] : Kategori barang<br>
+• tipe_model [VARCHAR(100)] : Contoh 'iPhone 13 Pro 128GB'<br>
+• ram, penyimpanan_internal [VARCHAR(20)] : Spesifikasi memori<br>
+• jenis_garansi [ENUM: 'RESMI','INTER','TIDAK_ADA']<br>
+• masa_garansi_bulan [INT] : Durasi garansi distributor<br>
+• created_at [TIMESTAMP]
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 10px;">
+                            <strong>2. <code>unit_hp</code> (Fisik Handphone per IMEI)</strong>
+                            <div class="code-container" style="padding: 6px 10px; margin-top: 4px; font-size: 11px;">
+• id [INT, PK, AI] | id_katalog [INT, FK]<br>
+• imei [VARCHAR(50), UNIQUE] : Serial unik perangkat<br>
+• warna [VARCHAR(50)], battery_health [INT]<br>
+• kondisi [ENUM: 'BARU','BEKAS']<br>
+• harga_modal, harga_jual [DECIMAL(15,2)]<br>
+• status_ketersediaan [ENUM: 'TERSEDIA','TERJUAL','RESERVED','RETUR','PERLU_INSPEKSI']<br>
+• created_at, updated_at [TIMESTAMP]
+                            </div>
+                        </div>
+
+                        <div>
+                            <strong>3. <code>stok_aksesoris</code> (Stok Agregat Barang Non-IMEI)</strong>
+                            <div class="code-container" style="padding: 6px 10px; margin-top: 4px; font-size: 11px;">
+• id [INT, PK, AI] | id_katalog [INT, FK]<br>
+• stok_jumlah [INT] : Kuantitas stok fisik di etalase<br>
+• harga_modal_rata_rata, harga_jual_default [DECIMAL(15,2)]<br>
+• updated_at [TIMESTAMP]
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modul Kontak -->
+                <div class="card" style="border-left: 4px solid var(--secondary);">
+                    <div class="card-header">
+                        <span class="card-title text-secondary">👥 Modul Kontak Relasi (contacts)</span>
+                        <span class="badge badge-info">1 Tabel</span>
+                    </div>
+                    <div class="card-body" style="font-size: 12px;">
+                        <strong>4. <code>contacts</code> (Entitas Pelanggan, Supplier &amp; Sales)</strong>
+                        <div class="code-container" style="padding: 8px 12px; margin-top: 6px; font-size: 11.5px; line-height: 1.55;">
+• <strong>id</strong> [INT, PK, AUTO_INCREMENT] : ID unik pihak terkait<br>
+• <strong>nama</strong> [VARCHAR(150), NOT NULL] : Nama lengkap individu/badan usaha<br>
+• <strong>no_hp</strong> [VARCHAR(20)], <strong>email</strong> [VARCHAR(150)] : Kontak komunikasi<br>
+• <strong>alamat</strong> [TEXT], <strong>tgl_lahir</strong> [DATE], <strong>catatan</strong> [TEXT]<br>
+• <strong>tipe_kontak</strong> [ENUM: 'CUSTOMER','SUPPLIER','SALES', NOT NULL]<br>
+• <strong>komisi_rate</strong> [DECIMAL(5,2)], <strong>komisi_tipe</strong> [ENUM: 'PER_UNIT','PERSENTASE','FLAT']<br>
+• <strong>loyalty_points</strong> [INT] : Akumulasi poin belanja reward<br>
+• <strong>total_spend</strong> [DECIMAL(15,2)] : Total belanja historis<br>
+• <strong>created_at</strong> [TIMESTAMP]
+                        </div>
+
+                        <div class="metric-box" style="text-align: left; margin-top: 14px; padding: 10px 14px;">
+                            <strong class="text-amber">Catatan DBA:</strong>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                                Field <code>tipe_kontak</code> berupa ENUM tunggal membatasi relasi. Satu kontak tidak bisa sekaligus menjadi Supplier kulakan dan Customer tanpa input ganda.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Notes -->
+            <div class="notes-data" style="display:none;">
+                <strong>Presenter Script (Slide 4):</strong><br>
+                "Pada agenda kedua ini, kami menjelaskan seluruh tabel beserta field-fieldnya. Slide ini menampilkan 4 tabel pertama: katalog_produk sebagai master spesifikasi HP, unit_hp yang melacak fisik HP berdasarkan IMEI unik, stok_aksesoris untuk barang non-IMEI, dan contacts untuk master pelanggan, pemasok, maupun sales."
+            </div>
+        </section>
+
+
+        <!-- ==================== SLIDE 5: AGENDA 2 - SELURUH TABEL & FIELD (BAGIAN 2) ==================== -->
+        <section class="slide" id="slide-5">
+            <div class="slide-tag">Agenda 02 &bull; Kamus Data (Bagian 2)</div>
+            <h2 class="slide-title">2. Penjelasan Seluruh Tabel &amp; Field (Modul 3, 4, &amp; 5)</h2>
+            <p class="slide-subtitle">Rincian struktur kolom pada Modul Transaksi POS, Piutang &amp; Beban Toko, serta Pengguna Sistem.</p>
+
+            <div class="grid-3" style="font-size: 12px;">
+                <!-- POS -->
+                <div class="card" style="border-top: 3px solid var(--accent-warning);">
+                    <div class="card-title" style="font-size: 14px;">🧾 Modul Transaksi POS</div>
+                    <div class="code-container" style="font-size: 10.5px; padding: 6px; margin-top: 6px;">
+<strong>5. transaksi (Header Nota)</strong><br>
+• id [INT, PK, AI] | no_nota [VARCHAR(50), UNI]<br>
+• tgl_transaksi [DATETIME]<br>
+• jenis_transaksi ['PENJUALAN','PEMBELIAN']<br>
+• id_contact [FK contacts.id]<br>
+• id_sales [FK contacts.id]<br>
+• metode_pembayaran ['CASH','TRANSFER']<br>
+• tipe_pembayaran ['LUNAS','DP']<br>
+• total_pembayaran, komisi_sales [DECIMAL]<br>
+• dp_nominal, sisa_hutang [DECIMAL]<br>
+• jatuh_tempo [DATE], tenor_bulan [INT]<br>
+• bunga_persen [DECIMAL], garansi_toko_hari<br><br>
+<strong>6. detail_transaksi (Item Belanja)</strong><br>
+• id [INT, PK, AI] | id_transaksi [FK]<br>
+• id_unit_hp [FK unit_hp.id]<br>
+• id_stok_aksesoris [FK stok_aksesoris.id]<br>
+• jumlah_qty [INT], harga_satuan [DECIMAL]<br>
+• insentif_sales [DECIMAL]<br><br>
+<strong>7. transaksi_sales (Split Komisi)</strong><br>
+• id [PK], id_transaksi [FK], id_sales [FK]<br>
+• komisi [DECIMAL], created_at [DATETIME]
+                    </div>
+                </div>
+
+                <!-- Piutang & Beban -->
+                <div class="card" style="border-top: 3px solid var(--accent-danger);">
+                    <div class="card-title" style="font-size: 14px;">💰 Modul Piutang &amp; Beban</div>
+                    <div class="code-container" style="font-size: 10.5px; padding: 6px; margin-top: 6px;">
+<strong>8. piutang (Buku Tagihan Kredit)</strong><br>
+• id [INT, PK, AI] | id_transaksi [FK]<br>
+• id_contact [FK contacts.id]<br>
+• tgl_piutang, jatuh_tempo [DATE]<br>
+• nominal_total, nominal_dibayar [DECIMAL]<br>
+• sisa_piutang [DECIMAL]<br>
+• status ['BELUM_LUNAS','LUNAS','SEBAGIAN']<br>
+• catatan [TEXT], created_at, updated_at<br><br>
+<strong>9. pembayaran_piutang (Cicilan)</strong><br>
+• id [INT, PK, AI] | id_piutang [FK]<br>
+• tgl_bayar [DATETIME], nominal_bayar [DECIMAL]<br>
+• metode_bayar ['CASH','TRANSFER','QRIS']<br>
+• catatan [TEXT], created_at [TIMESTAMP]<br><br>
+<strong>10. pengeluaran_operasional</strong><br>
+• id [PK], tgl_pengeluaran [DATETIME]<br>
+• kategori [VARCHAR], deskripsi, nominal<br><br>
+<strong>11. dana_allocation</strong><br>
+• id [PK], tgl_alokasi, kategori, nominal, sumber
+                    </div>
+                </div>
+
+                <!-- Users & Settings -->
+                <div class="card" style="border-top: 3px solid var(--accent-success);">
+                    <div class="card-title" style="font-size: 14px;">🔐 Modul Akses &amp; Konfigurasi</div>
+                    <div class="code-container" style="font-size: 10.5px; padding: 6px; margin-top: 6px;">
+<strong>12. users (Autentikasi Aplikasi)</strong><br>
+• id [INT, PK, AUTO_INCREMENT]<br>
+• username [VARCHAR(50), UNIQUE]<br>
+• password_hash [VARCHAR(255)] (Bcrypt)<br>
+• nama_lengkap [VARCHAR(100)]<br>
+• role [ENUM: 'admin','kasir','owner']<br>
+• is_active [TINYINT(1)]<br>
+• last_login [DATETIME]<br>
+• created_at, updated_at [TIMESTAMP]<br><br>
+<strong>13. settings (Key-Value Config)</strong><br>
+• id [INT, PK, AUTO_INCREMENT]<br>
+• kunci [VARCHAR(100), UNIQUE]<br>
+• nilai [TEXT] (Termasuk API Key & Profil Toko)<br>
+• deskripsi [TEXT]<br>
+• created_at, updated_at [TIMESTAMP]
+                    </div>
+                </div>
+            </div>
+            <!-- Notes -->
+            <div class="notes-data" style="display:none;">
+                <strong>Presenter Script (Slide 5):</strong><br>
+                "Melanjutkan kamus data: tabel 5 sampai 13 mencakup transaksi POS (transaksi, detail, komisi sales), manajemen piutang kredit dan angsurannya, beban operasional toko, serta otentikasi user dan konfigurasi sistem. Seluruh tabel ini saling bergantung secara relasional."
+            </div>
+        </section>
+
+
+        <!-- ==================== SLIDE 6: AGENDA 3 - VISUAL ERD ==================== -->
+        <section class="slide" id="slide-6">
+            <div class="slide-tag">Agenda 03 &bull; Arsitektur Relasional</div>
+            <h2 class="slide-title">3. Relasi Antar Tabel &amp; Visual ERD Database</h2>
+            <p class="slide-subtitle">Diagram Visual Relasi Entitas (ERD) menggambarkan alur keterhubungan dan kardinalitas pada basis data fajar_cell.</p>
+
+            <div class="erd-container" style="height: 54vh; padding: 10px;">
+                <!-- Full Visual Scalable SVG ERD -->
+                <svg viewBox="0 0 1100 520" style="width: 100%; height: 100%; max-height: 500px;" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+                        </marker>
+                        <marker id="crow" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                            <path d="M 10 0 L 0 5 L 10 10 M 0 5 L 10 5" fill="none" stroke="#818cf8" stroke-width="1.8" />
+                        </marker>
+                        <filter id="boxglow" x="-10%" y="-10%" width="120%" height="120%">
+                            <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.5"/>
+                        </filter>
+                    </defs>
+
+                    <!-- Table 1: katalog_produk -->
+                    <g filter="url(#boxglow)">
+                        <rect x="20" y="30" width="180" height="110" rx="8" fill="#111827" stroke="#38bdf8" stroke-width="1.5"/>
+                        <rect x="20" y="30" width="180" height="28" rx="8" fill="#1e293b"/>
+                        <text x="30" y="49" fill="#38bdf8" font-family="'JetBrains Mono'" font-size="12" font-weight="bold">katalog_produk</text>
+                        <text x="30" y="75" fill="#f8fafc" font-family="'JetBrains Mono'" font-size="11">🔑 id [PK]</text>
+                        <text x="30" y="93" fill="#94a3b8" font-family="'JetBrains Mono'" font-size="10">tipe_model, kategori</text>
+                        <text x="30" y="110" fill="#94a3b8" font-family="'JetBrains Mono'" font-size="10">ram, rom, garansi</text>
+                    </g>
+
+                    <!-- Table 2: unit_hp -->
+                    <g filter="url(#boxglow)">
+                        <rect x="250" y="30" width="180" height="125" rx="8" fill="#111827" stroke="#38bdf8" stroke-width="1.5"/>
+                        <rect x="250" y="30" width="180" height="28" rx="8" fill="#1e293b"/>
+                        <text x="260" y="49" fill="#38bdf8" font-family="'JetBrains Mono'" font-size="12" font-weight="bold">unit_hp</text>
+                        <text x="260" y="75" fill="#f8fafc" font-family="'JetBrains Mono'" font-size="11">🔑 id [PK]</text>
+                        <text x="260" y="93" fill="#38bdf8" font-family="'JetBrains Mono'" font-size="10">🔗 id_katalog [FK]</text>
+                        <text x="260" y="110" fill="#fbbf24" font-family="'JetBrains Mono'" font-size="10">imei [UNIQUE]</text>
+                        <text x="260" y="127" fill="#94a3b8" font-family="'JetBrains Mono'" font-size="10">status_ketersediaan</text>
+                    </g>
+
+                    <!-- Table 3: stok_aksesoris -->
+                    <g filter="url(#boxglow)">
+                        <rect x="250" y="180" width="180" height="95" rx="8" fill="#111827" stroke="#38bdf8" stroke-width="1.5"/>
+                        <rect x="250" y="180" width="180" height="28" rx="8" fill="#1e293b"/>
+                        <text x="260" y="199" fill="#38bdf8" font-family="'JetBrains Mono'" font-size="12" font-weight="bold">stok_aksesoris</text>
+                        <text x="260" y="225" fill="#f8fafc" font-family="'JetBrains Mono'" font-size="11">🔑 id [PK]</text>
+                        <text x="260" y="243" fill="#38bdf8" font-family="'JetBrains Mono'" font-size="10">🔗 id_katalog [FK]</text>
+                        <text x="260" y="260" fill="#94a3b8" font-family="'JetBrains Mono'" font-size="10">stok_jumlah, harga</text>
+                    </g>
+
+                    <!-- Table 4: contacts -->
+                    <g filter="url(#boxglow)">
+                        <rect x="490" y="340" width="180" height="120" rx="8" fill="#111827" stroke="#818cf8" stroke-width="1.5"/>
+                        <rect x="490" y="340" width="180" height="28" rx="8" fill="#1e293b"/>
+                        <text x="500" y="359" fill="#818cf8" font-family="'JetBrains Mono'" font-size="12" font-weight="bold">contacts</text>
+                        <text x="500" y="385" fill="#f8fafc" font-family="'JetBrains Mono'" font-size="11">🔑 id [PK]</text>
+                        <text x="500" y="403" fill="#94a3b8" font-family="'JetBrains Mono'" font-size="10">nama, no_hp, alamat</text>
+                        <text x="500" y="420" fill="#fbbf24" font-family="'JetBrains Mono'" font-size="10">tipe_kontak [ENUM]</text>
+                        <text x="500" y="437" fill="#94a3b8" font-family="'JetBrains Mono'" font-size="10">loyalty_points, komisi</text>
+                    </g>
+
+                    <!-- Table 5: transaksi -->
+                    <g filter="url(#boxglow)">
+                        <rect x="490" y="60" width="190" height="150" rx="8" fill="#111827" stroke="#fbbf24" stroke-width="1.8"/>
+                        <rect x="490" y="60" width="190" height="28" rx="8" fill="#1e293b"/>
+                        <text x="500" y="79" fill="#fbbf24" font-family="'JetBrains Mono'" font-size="12" font-weight="bold">transaksi (Header)</text>
+                        <text x="500" y="105" fill="#f8fafc" font-family="'JetBrains Mono'" font-size="11">🔑 id [PK]</text>
+                        <text x="500" y="123" fill="#fbbf24" font-family="'JetBrains Mono'" font-size="10">no_nota [UNIQUE]</text>
+                        <text x="500" y="140" fill="#818cf8" font-family="'JetBrains Mono'" font-size="10">🔗 id_contact [FK]</text>
+                        <text x="500" y="157" fill="#818cf8" font-family="'JetBrains Mono'" font-size="10">🔗 id_sales [FK]</text>
+                        <text x="500" y="174" fill="#94a3b8" font-family="'JetBrains Mono'" font-size="10">total_pembayaran</text>
+                    </g>
+
+                    <!-- Table 6: detail_transaksi -->
+                    <g filter="url(#boxglow)">
+                        <rect x="250" y="320" width="180" height="140" rx="8" fill="#111827" stroke="#f87171" stroke-width="1.8"/>
+                        <rect x="250" y="320" width="180" height="28" rx="8" fill="#1e293b"/>
+                        <text x="260" y="339" fill="#f87171" font-family="'JetBrains Mono'" font-size="12" font-weight="bold">detail_transaksi</text>
+                        <text x="260" y="365" fill="#f8fafc" font-family="'JetBrains Mono'" font-size="11">🔑 id [PK]</text>
+                        <text x="260" y="383" fill="#fbbf24" font-family="'JetBrains Mono'" font-size="10">🔗 id_transaksi [FK]</text>
+                        <text x="260" y="400" fill="#38bdf8" font-family="'JetBrains Mono'" font-size="10">🔗 id_unit_hp [FK]</text>
+                        <text x="260" y="417" fill="#38bdf8" font-family="'JetBrains Mono'" font-size="10">🔗 id_stok_aksesoris [FK]</text>
+                        <text x="260" y="434" fill="#f87171" font-family="'JetBrains Mono'" font-size="10">jumlah_qty, harga_satuan</text>
+                    </g>
+
+                    <!-- Table 7: piutang -->
+                    <g filter="url(#boxglow)">
+                        <rect x="760" y="60" width="170" height="120" rx="8" fill="#111827" stroke="#34d399" stroke-width="1.5"/>
+                        <rect x="760" y="60" width="170" height="28" rx="8" fill="#1e293b"/>
+                        <text x="770" y="79" fill="#34d399" font-family="'JetBrains Mono'" font-size="12" font-weight="bold">piutang</text>
+                        <text x="770" y="105" fill="#f8fafc" font-family="'JetBrains Mono'" font-size="11">🔑 id [PK]</text>
+                        <text x="770" y="123" fill="#fbbf24" font-family="'JetBrains Mono'" font-size="10">🔗 id_transaksi [FK]</text>
+                        <text x="770" y="140" fill="#818cf8" font-family="'JetBrains Mono'" font-size="10">🔗 id_contact [FK]</text>
+                        <text x="770" y="157" fill="#94a3b8" font-family="'JetBrains Mono'" font-size="10">nominal_total, sisa</text>
+                    </g>
+
+                    <!-- Table 8: pembayaran_piutang -->
+                    <g filter="url(#boxglow)">
+                        <rect x="760" y="240" width="170" height="95" rx="8" fill="#111827" stroke="#34d399" stroke-width="1.5"/>
+                        <rect x="760" y="240" width="170" height="28" rx="8" fill="#1e293b"/>
+                        <text x="770" y="259" fill="#34d399" font-family="'JetBrains Mono'" font-size="12" font-weight="bold">pembayaran_piutang</text>
+                        <text x="770" y="285" fill="#f8fafc" font-family="'JetBrains Mono'" font-size="11">🔑 id [PK]</text>
+                        <text x="770" y="303" fill="#34d399" font-family="'JetBrains Mono'" font-size="10">🔗 id_piutang [FK]</text>
+                        <text x="770" y="320" fill="#94a3b8" font-family="'JetBrains Mono'" font-size="10">tgl_bayar, nominal</text>
+                    </g>
+
+                    <!-- Relationship Lines -->
+                    <!-- katalog -> unit_hp (1 to N) -->
+                    <path d="M 200 85 L 250 85" stroke="#38bdf8" stroke-width="2" marker-end="url(#crow)"/>
+                    
+                    <!-- katalog -> stok_aksesoris (1 to N) -->
+                    <path d="M 110 140 L 110 227 L 250 227" stroke="#38bdf8" stroke-width="2" fill="none" marker-end="url(#crow)"/>
+
+                    <!-- transaksi -> detail_transaksi (1 to N) -->
+                    <path d="M 490 180 L 410 180 L 410 320" stroke="#fbbf24" stroke-width="2" fill="none" marker-end="url(#crow)"/>
+
+                    <!-- unit_hp -> detail_transaksi (1 to N) -->
+                    <path d="M 330 155 L 330 320" stroke="#38bdf8" stroke-width="1.8" stroke-dasharray="4,4" fill="none" marker-end="url(#crow)"/>
+
+                    <!-- contacts -> transaksi (id_contact & id_sales) -->
+                    <path d="M 585 340 L 585 210" stroke="#818cf8" stroke-width="2" fill="none" marker-end="url(#crow)"/>
+
+                    <!-- transaksi -> piutang (1 to N) -->
+                    <path d="M 680 115 L 760 115" stroke="#fbbf24" stroke-width="2" marker-end="url(#crow)"/>
+
+                    <!-- piutang -> pembayaran_piutang (1 to N) -->
+                    <path d="M 845 180 L 845 240" stroke="#34d399" stroke-width="2" marker-end="url(#crow)"/>
+
+                    <!-- Legend -->
+                    <g transform="translate(20, 480)">
+                        <line x1="0" y1="10" x2="30" y2="10" stroke="#38bdf8" stroke-width="2"/>
+                        <text x="38" y="14" fill="#94a3b8" font-family="'Plus Jakarta Sans'" font-size="11">Relasi 1-to-Many (1:N)</text>
+
+                        <line x1="180" y1="10" x2="210" y2="10" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4,4"/>
+                        <text x="218" y="14" fill="#94a3b8" font-family="'Plus Jakarta Sans'" font-size="11">Nullable FK (SET NULL Risk)</text>
+
+                        <rect x="380" y="2" width="12" height="12" fill="#fbbf24" rx="2"/>
+                        <text x="400" y="14" fill="#94a3b8" font-family="'Plus Jakarta Sans'" font-size="11">Tabel Sentral (Jantung POS)</text>
+                    </g>
+                </svg>
+            </div>
+            <!-- Notes -->
+            <div class="notes-data" style="display:none;">
+                <strong>Presenter Script (Slide 6):</strong><br>
+                "Di slide 6 ini, kita melihat Visual Entity Relationship Diagram (ERD) lengkap database fajar_cell. Perhatikan garis putus-putus antara unit_hp dan detail_transaksi: relasi ini bersifat opsional dan nullable. Inilah celah di mana 10 record orphan terjadi. Tabel 'transaksi' di tengah menghubungkan produk, sales, pelanggan, dan alur piutang kredit di sebelah kanan."
+            </div>
+        </section>
+
+
+        <!-- ==================== SLIDE 7: AGENDA 3 - ANALISIS RELASI & REFERENTIAL RULES ==================== -->
+        <section class="slide" id="slide-7">
+            <div class="slide-tag">Agenda 03 &bull; Analisis Integritas Relasional</div>
+            <h2 class="slide-title">3. Evaluasi Aturan Referensial (Delete/Update Rules)</h2>
+            <p class="slide-subtitle">Audit terhadap aksi Foreign Key Constraint: Mengapa pilihan `SET NULL` dan `CASCADE` menjadi bumerang bagi Fajar Cell.</p>
+
+            <div class="table-responsive" style="margin-bottom: 16px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Foreign Key Relationship</th>
+                            <th>Tabel Anak $\rightarrow$ Induk</th>
+                            <th>ON DELETE</th>
+                            <th>ON UPDATE</th>
+                            <th>Evaluasi Risiko DBA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>detail_transaksi.id_unit_hp</code></td>
+                            <td>detail $\rightarrow$ unit_hp</td>
+                            <td><span class="badge badge-critical">SET NULL</span></td>
+                            <td>NO ACTION</td>
+                            <td><strong>FATAL:</strong> Jika unit HP terhapus dari gudang, histori nota kehilangan identitas barang terjual.</td>
+                        </tr>
+                        <tr>
+                            <td><code>detail_transaksi.id_transaksi</code></td>
+                            <td>detail $\rightarrow$ transaksi</td>
+                            <td><span class="badge badge-warning">CASCADE</span></td>
+                            <td>NO ACTION</td>
+                            <td>Nota dihapus langsung menghapus seluruh item transaksi tanpa riwayat log backup.</td>
+                        </tr>
+                        <tr>
+                            <td><code>piutang.id_transaksi</code></td>
+                            <td>piutang $\rightarrow$ transaksi</td>
+                            <td><span class="badge badge-critical">CASCADE</span></td>
+                            <td>NO ACTION</td>
+                            <td><strong>KRITIS:</strong> Menghapus transaksi otomatis menghapus catatan sisa tagihan hutang pelanggan!</td>
+                        </tr>
+                        <tr>
+                            <td><code>unit_hp.id_katalog</code></td>
+                            <td>unit_hp $\rightarrow$ katalog_produk</td>
+                            <td><span class="badge badge-success">RESTRICT</span></td>
+                            <td>NO ACTION</td>
+                            <td><strong>AMAN:</strong> Mencegah penghapusan master katalog selama masih ada unit fisik tersisa.</td>
+                        </tr>
+                        <tr>
+                            <td><code>transaksi.id_contact</code></td>
+                            <td>transaksi $\rightarrow$ contacts</td>
+                            <td><span class="badge badge-success">RESTRICT</span></td>
+                            <td>NO ACTION</td>
+                            <td><strong>AMAN:</strong> Pelanggan/Supplier yang memiliki jejak nota tidak dapat dihapus sembarangan.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="grid-2">
+                <div class="card" style="border-left: 4px solid var(--accent-danger);">
+                    <div class="card-title text-rose" style="font-size: 14px;">Bahaya #1: The Disappearing Items (SET NULL)</div>
+                    <div class="card-body">
+                        Di database akuntansi, data masa lalu tidak boleh diputus referensinya. Dengan <code>SET NULL</code>, laporan penjualan masa lalu bisa bernilai Rp 15 Juta tetapi field barangnya berubah menjadi kosong.
+                    </div>
+                </div>
+
+                <div class="card" style="border-left: 4px solid var(--accent-warning);">
+                    <div class="card-title text-amber" style="font-size: 14px;">Bahaya #2: Accidental Debt Wipeout (CASCADE)</div>
+                    <div class="card-body">
+                        Jika kasir membatalkan nota transaksi kredit lama yang keliru, aturan <code>CASCADE</code> di tabel piutang akan langsung menghapus seluruh rekam jejak cicilan pembayaran yang sudah disetor debitur.
+                    </div>
+                </div>
+            </div>
+            <!-- Notes -->
+            <div class="notes-data" style="display:none;">
+                <strong>Presenter Script (Slide 7):</strong><br>
+                "Setelah melihat ERD-nya, mari kita evaluasi aturan referensialnya. Di sini kita menemukan dua anti-pattern besar. Pertama: relasi unit HP ke detail transaksi disetel ON DELETE SET NULL. Jika unit HP dihapus dari database gudang, riwayat penjualan masa lalu kehilangan jejak barang fisiknya! Kedua: piutang disetel CASCADE ke transaksi. Jika transaksi dihapus, seluruh tagihan hutang pelanggan ikut terhapus otomatis tanpa jejak."
+            </div>
+        </section>
+
+
+        <!-- ==================== SLIDE 8: AGENDA 4 - IDENTIFIKASI RISIKO DATA ==================== -->
+        <section class="slide" id="slide-8">
+            <div class="slide-tag">Agenda 04 &bull; Temuan Audit Lapangan</div>
+            <h2 class="slide-title">4. Identifikasi Risiko Data (Temuan Nyata Audit)</h2>
+            <p class="slide-subtitle">Bukti hasil eksekusi query audit pada database localhost membuktikan kegagalan integritas data secara riil.</p>
+
+            <div class="grid-3" style="margin-bottom: 16px;">
+                <div class="card" style="border-top: 4px solid var(--accent-danger);">
+                    <div class="card-header">
+                        <span class="card-title text-rose">1. Inkonsistensi Data</span>
+                        <span class="badge badge-critical">P1 Critical</span>
+                    </div>
+                    <div class="card-body">
+                        • <strong>10 Record Orphan Detail:</strong> <code>id_unit_hp</code> dan <code>id_stok_aksesoris</code> keduanya bernilai NULL.<br><br>
+                        • <strong>Disparitas Nilai Header vs Detail:</strong><br>
+                        - Transaksi #24: Total Nota Rp 1,2 Jt vs Detail Rp 12 Jt (<span class="text-rose">Selisih 10,8 Jt</span>)<br>
+                        - Transaksi #30: Total Nota Rp 99 vs Detail Rp 9,85 Jt!
+                    </div>
+                </div>
+
+                <div class="card" style="border-top: 4px solid var(--accent-warning);">
+                    <div class="card-header">
+                        <span class="card-title text-amber">2. Redundansi &amp; Anomali</span>
+                        <span class="badge badge-critical">P1 Critical</span>
+                    </div>
+                    <div class="card-body">
+                        • <strong>11 Record Harga Satuan Negatif:</strong> Kasir memasukkan unit trade-in dengan harga minus hingga <strong>-Rp 13.700.000</strong> karena tidak ada skema tukar tambah resmi.<br><br>
+                        • <strong>Komisi Sales Redundan di 3 Tempat:</strong> Tercatat di <code>transaksi</code>, <code>detail_transaksi</code>, dan <code>transaksi_sales</code> tanpa sinkronisasi otomatis.
+                    </div>
+                </div>
+
+                <div class="card" style="border-top: 4px solid var(--primary);">
+                    <div class="card-header">
+                        <span class="card-title text-cyan">3. Kehilangan &amp; Keamanan</span>
+                        <span class="badge badge-warning">P2 High</span>
+                    </div>
+                    <div class="card-body">
+                        • <strong>Kehilangan Data Historis:</strong> Tidak ada fitur <em>Soft Delete</em>; penghapusan bersifat fisik (*hard delete*).<br><br>
+                        • <strong>Ketiadaan Jejak Audit Kasir:</strong> Tabel transaksi tidak memiliki kolom <code>created_by</code>.<br><br>
+                        • <strong>Plaintext Credentials:</strong> API Key pihak ketiga tersimpan polos di tabel <code>settings</code>.
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="background: rgba(15, 23, 42, 0.4); padding: 12px 18px;">
+                <div style="font-size: 13px; color: var(--text-muted);">
+                    <strong class="text-rose">Dampak Bisnis Nyata:</strong> Laporan laba-rugi toko, perhitungan komisi karyawan, dan stok gudang saat ini berada dalam kondisi bias dan tidak dapat diaudit secara akuntansi formal.
+                </div>
+            </div>
+            <!-- Notes -->
+            <div class="notes-data" style="display:none;">
+                <strong>Presenter Script (Slide 8):</strong><br>
+                "Memasuki agenda keempat: identifikasi risiko data berdasarkan bukti audit nyata di MySQL localhost. Kami menemukan 10 baris transaksi tanpa barang, 11 baris dengan harga minus hingga -13,7 juta rupiah karena fitur tukar-tambah dipaksakan, serta selisih kalkulasi nota hingga belasan juta rupiah. Ini membuktikan bahwa tanpa constraint di database, data produksi pasti akan korup."
+            </div>
+        </section>
+
+
+        <!-- ==================== SLIDE 9: AGENDA 4 - KEBUTUHAN DATA BARU ==================== -->
+        <section class="slide" id="slide-9">
+            <div class="slide-tag">Agenda 04 &bull; Kebutuhan Data</div>
+            <h2 class="slide-title">4. Kebutuhan Data Baru (Penyempurnaan Skema)</h2>
+            <p class="slide-subtitle">Solusi pemodelan data baru untuk mengeliminasi trik harga negatif dan mendukung jejak audit akuntabel.</p>
+
+            <div class="grid-3">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title text-cyan">1. Entitas Tukar Tambah</span>
+                        <span class="badge badge-info">Tabel Baru</span>
+                    </div>
+                    <div class="card-body">
+                        Hentikan praktik harga minus! Buat tabel khusus:<br><br>
+                        <code class="font-mono text-cyan">transaksi_tukar_tambah</code><br>
+                        • <code>id</code> [INT, PK, AI]<br>
+                        • <code>id_transaksi_jual</code> [FK transaksi.id]<br>
+                        • <code>imei_unit_masuk</code> [VARCHAR(50)]<br>
+                        • <code>kondisi_taksiran</code> [TEXT]<br>
+                        • <code>nilai_potongan_harga</code> [DECIMAL]<br>
+                        • <code>status_inspeksi</code> [ENUM]
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title text-emerald">2. Standard Audit Trail</span>
+                        <span class="badge badge-success">Standar Industri</span>
+                    </div>
+                    <div class="card-body">
+                        Wajib menambahkan 4 kolom pengawasan di seluruh tabel transaksi dan inventaris:<br><br>
+                        • <code>created_by</code> [INT, FK users.id]<br>
+                        • <code>created_at</code> [TIMESTAMP DEFAULT NOW]<br>
+                        • <code>updated_by</code> [INT, FK users.id]<br>
+                        • <code>deleted_at</code> [TIMESTAMP NULL]<br>
+                        (Untuk mendukung <em>Soft Deletes</em>)
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title text-secondary">3. Relasi Fleksibel Kontak</span>
+                        <span class="badge badge-warning">Normalisasi</span>
+                    </div>
+                    <div class="card-body">
+                        Ubah kolom kaku ENUM <code>tipe_kontak</code> menjadi tabel relasi multi-peran:<br><br>
+                        <code class="font-mono text-secondary">contact_roles</code><br>
+                        • <code>id_contact</code> [FK contacts.id]<br>
+                        • <code>role</code> ['CUSTOMER','SUPPLIER','SALES']<br><br>
+                        Satu entitas toko rekanan kini bisa berperan sebagai Supplier kulakan sekaligus Customer.
+                    </div>
+                </div>
+            </div>
+            <!-- Notes -->
+            <div class="notes-data" style="display:none;">
+                <strong>Presenter Script (Slide 9):</strong><br>
+                "Bagian dari agenda empat adalah merumuskan kebutuhan data baru. Kami mengusulkan: 1) Pembuatan tabel transaksi_tukar_tambah untuk menampung unit trade-in tanpa merusak tabel penjualan; 2) Penambahan kolom audit trail created_by dan deleted_at di semua tabel operasional; 3) Normalisasi relasi kontak agar satu mitra bisnis bisa memiliki peran ganda tanpa duplikasi data."
+            </div>
+        </section>
+
+
+        <!-- ==================== SLIDE 10: AGENDA 4 - PRIORITAS PERLINDUNGAN & DDL ==================== -->
+        <section class="slide" id="slide-10">
+            <div class="slide-tag">Agenda 04 &bull; Prioritas &amp; Mitigasi DBA</div>
+            <h2 class="slide-title">4. Prioritas Perlindungan &amp; Langkah Mitigasi DBA</h2>
+            <p class="slide-subtitle">Matriks perlindungan sistem informasi dan script SQL DDL langsung untuk mengamankan engine database.</p>
+
+            <div class="grid-2">
+                <div style="display: flex; flex-direction: column; gap: 14px;">
+                    <div class="card" style="border-left: 4px solid var(--accent-danger);">
+                        <div class="card-title text-rose" style="font-size: 14px;">Prioritas 1 (P1 &bull; CRITICAL): Integritas Finansial</div>
+                        <div class="card-body" style="font-size: 12.5px;">
+                            • Pasang <strong>CHECK Constraint</strong> untuk menolak harga minus dan kuantitas 0.<br>
+                            • Pasang aturan <strong>XOR Item</strong>: baris detail wajib memilih HP <em>atau</em> Aksesoris, tidak boleh kosong keduanya.<br>
+                            • Ubah foreign key menjadi <strong><code>RESTRICT</code></strong>.
+                        </div>
+                    </div>
+
+                    <div class="code-container">
+<span class="code-comment">-- DDL Script Mitigasi Integritas Fajar Cell</span>
+<span class="code-keyword">ALTER TABLE</span> detail_transaksi 
+<span class="code-keyword">ADD CONSTRAINT</span> chk_harga_positif <span class="code-keyword">CHECK</span> (harga_satuan &gt;= 0),
+<span class="code-keyword">ADD CONSTRAINT</span> chk_qty_positif <span class="code-keyword">CHECK</span> (jumlah_qty &gt; 0),
+<span class="code-keyword">ADD CONSTRAINT</span> chk_item_terisi <span class="code-keyword">CHECK</span> (
+    (id_unit_hp <span class="code-keyword">IS NOT NULL AND</span> id_stok_aksesoris <span class="code-keyword">IS NULL</span>) <span class="code-keyword">OR</span>
+    (id_unit_hp <span class="code-keyword">IS NULL AND</span> id_stok_aksesoris <span class="code-keyword">IS NOT NULL</span>)
+);
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 14px;">
+                    <div class="card" style="border-left: 4px solid var(--accent-warning);">
+                        <div class="card-title text-amber" style="font-size: 14px;">Prioritas 2 (P2 &bull; HIGH): Proteksi &amp; Disaster Recovery</div>
+                        <div class="card-body" style="font-size: 12.5px;">
+                            • <strong>Backup Terjadwal:</strong> Full backup harian terkompresi via <code>mysqldump</code> pukul 02:00 WIB.<br>
+                            • <strong>Point-in-Time Recovery (PITR):</strong> Mengaktifkan MySQL Binary Log (<code>log_bin=ON</code>) untuk menjamin RPO &lt; 5 menit.<br>
+                            • <strong>Principle of Least Privilege:</strong> User aplikasi <code>app_pos</code> hanya diizinkan <code>SELECT, INSERT, UPDATE</code> (cabut hak <code>DROP/ALTER</code>).<br>
+                            • <strong>Transaksi ACID Terisolasi:</strong> Checkout kasir wajib dibungkus dalam blok atomik <code>START TRANSACTION ... COMMIT</code>.
+                        </div>
+                    </div>
+
+                    <div class="metric-box" style="text-align: left; background: rgba(52, 211, 153, 0.05); border-color: rgba(52, 211, 153, 0.3);">
+                        <strong class="text-emerald">Kesimpulan Strategis DBA:</strong>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">
+                            Mitigasi ini mengalihkan beban validasi dari front-end aplikasi ke Database Engine MySQL, sehingga integritas data terjamin 100% konsisten.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Notes -->
+            <div class="notes-data" style="display:none;">
+                <strong>Presenter Script (Slide 10):</strong><br>
+                "Langkah terakhir adalah mitigasi dan prioritas perlindungan. Prioritas 1 kami adalah memasang constraint langsung di level DDL: harga wajib positif, kuantitas positif, dan detail transaksi wajib XOR (hanya HP atau aksesoris). Prioritas 2 kami adalah disaster recovery: backup terjadwal, pengaktifan binary log untuk Point-in-Time Recovery, dan membatasi hak akses user aplikasi agar tidak bisa melakukan DROP atau ALTER."
+            </div>
+        </section>
+
+
+        <!-- ==================== SLIDE 11: CLOSING & Q&A ==================== -->
+        <section class="slide" id="slide-11">
+            <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; max-width: 920px; margin: 0 auto;">
+                <div class="slide-tag">Kesimpulan &amp; Sesi Tanya Jawab</div>
+                <h2 style="font-size: clamp(32px, 4vw, 48px); font-weight: 800; line-height: 1.2; margin-bottom: 18px; background: linear-gradient(135deg, #ffffff 40%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    "Database yang Tangguh Mencegah Anomali Sebelum Menyentuh Data"
+                </h2>
+                
+                <p style="font-size: 16px; color: var(--text-muted); line-height: 1.6; margin-bottom: 30px; max-width: 740px;">
+                    Melalui Initial Assessment pada database <strong>Fajar Cell</strong>, kita membuktikan bahwa integritas sistem informasi retail wajib dijaga melalui pemodelan skema yang tepat, penegakan referensial constraint, dan perlindungan backup berkala.
+                </p>
+
+                <div class="grid-3" style="width: 100%; margin-bottom: 34px; text-align: left;">
+                    <div class="card">
+                        <div class="card-title text-cyan" style="font-size: 14px;">1. Skema Bersih</div>
+                        <div class="card-body" style="font-size: 12.5px;">Tabel tukar tambah resmi &amp; normalisasi kontak.</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title text-emerald" style="font-size: 14px;">2. Integritas DDL</div>
+                        <div class="card-body" style="font-size: 12.5px;">CHECK constraint, XOR item, dan foreign key RESTRICT.</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title text-amber" style="font-size: 14px;">3. Perlindungan Kuat</div>
+                        <div class="card-body" style="font-size: 12.5px;">Daily backup, PITR binlog, dan isolasi transaksi ACID.</div>
+                    </div>
+                </div>
+
+                <div style="font-size: 19px; font-weight: 700; color: var(--text-main);">
+                    Terima Kasih &bull; Sesi Diskusi &amp; Tanya Jawab Dibuka
+                </div>
+            </div>
+            <!-- Notes -->
+            <div class="notes-data" style="display:none;">
+                <strong>Presenter Script (Slide 11):</strong><br>
+                "Demikian presentasi DBA Initial Assessment dari kelompok kami mengenai studi kasus Fajar Cell. Semoga pembahasan 4 agenda ini memberikan gambaran komprehensif tentang pentingnya peran DBA dalam menjaga kelangsungan bisnis. Kami persilakan jika ada pertanyaan dari rekan-rekan mahasiswa atau bapak/ibu dosen."
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Speaker Notes Drawer -->
+    <aside class="speaker-notes-drawer" id="speakerNotesDrawer">
+        <div class="notes-header">
+            <div class="notes-title">🎙️ Presenter Script / Speaker Notes</div>
+            <button class="icon-btn" onclick="toggleNotes()" style="padding: 2px 8px;">✕</button>
+        </div>
+        <div class="notes-content" id="notesContent">
+            Memuat catatan presenter...
+        </div>
+    </aside>
+
+    <!-- Floating Navigation Bar -->
+    <nav class="nav-bar">
+        <button class="nav-btn" onclick="prevSlide()" title="Slide Sebelumnya (Arrow Left)">‹</button>
+        <div class="slide-counter">
+            <span id="currentSlideNum">1</span> / <span id="totalSlideNum">11</span>
+        </div>
+        <button class="nav-btn" onclick="nextSlide()" title="Slide Berikutnya (Arrow Right / Space)">›</button>
+    </nav>
+
+    <!-- Interactive Script -->
+    <script>
+        let currentSlide = 1;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        document.getElementById('totalSlideNum').textContent = totalSlides;
+
+        function updateSlideUI() {
+            slides.forEach((slide, idx) => {
+                const isActive = (idx === currentSlide - 1);
+                slide.classList.toggle('active', isActive);
+            });
+
+            document.getElementById('currentSlideNum').textContent = currentSlide;
+            const progress = ((currentSlide) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            // Update Speaker Notes
+            const activeSlide = slides[currentSlide - 1];
+            const notesEl = activeSlide.querySelector('.notes-data');
+            const drawerContent = document.getElementById('notesContent');
+            if (notesEl) {
+                drawerContent.innerHTML = notesEl.innerHTML;
+            } else {
+                drawerContent.innerHTML = '<em>Tidak ada catatan khusus untuk slide ini.</em>';
+            }
+        }
+
+        function showSlide(index) {
+            if (index < 1) index = 1;
+            if (index > totalSlides) index = totalSlides;
+            currentSlide = index;
+            updateSlideUI();
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                showSlide(currentSlide + 1);
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 1) {
+                showSlide(currentSlide - 1);
+            }
+        }
+
+        function toggleNotes() {
+            const drawer = document.getElementById('speakerNotesDrawer');
+            drawer.classList.toggle('open');
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => alert(err.message));
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                e.preventDefault();
+                prevSlide();
+            } else if (e.key === 'f' || e.key === 'F') {
+                toggleFullScreen();
+            } else if (e.key === 's' || e.key === 'S') {
+                toggleNotes();
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateSlideUI();
+        });
+    </script>
+</body>
+</html>
